@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Accueil - Gestion Budgétaire</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #008000, #FFD700, #D00000);
+      margin: 0;
+      min-height: 100vh;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 10px;
+      padding: 30px 40px;
+      width: 420px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    h1 {
+      color: #008000;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .welcome {
+      font-size: 1.2em;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 1.1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      color: white;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    .btn-income {
+      background-color: #008000;
+    }
+    .btn-expense {
+      background-color: #D00000;
+    }
+    .btn-balance {
+      background-color: #FFD700;
+      color: #333;
+      font-weight: bold;
+    }
+    .btn-history {
+      background-color: #006400;
+    }
+    .btn-logout {
+      background-color: #555;
+    }
+    .balance {
+      font-size: 1.4em;
+      font-weight: bold;
+      margin: 15px 0;
+      text-align: center;
+    }
+    /* Modal styles */
+    .modal-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 10px;
+      width: 350px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      position: relative;
+    }
+    .modal h3 {
+      margin-top: 0;
+      color: #008000;
+      text-align: center;
+    }
+    .modal label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    .modal input, .modal select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      font-size: 1em;
+    }
+    .modal button {
+      margin-top: 20px;
+      background-color: #008000;
+      color: white;
+      font-weight: bold;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .modal button:hover {
+      background-color: #006400;
+    }
+    .modal .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.4em;
+      cursor: pointer;
+      color: #555;
+    }
+    /* History table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+      font-size: 0.95em;
+    }
+    th {
+      background-color: #008000;
+      color: white;
+    }
+    .income {
+      color: #008000;
+      font-weight: bold;
+    }
+    .expense {
+      color: #D00000;
+      font-weight: bold;
+    }
+    .no-data {
+      text-align: center;
+      margin-top: 15px;
+      font-style: italic;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Gestion Budgétaire</h1>
+    <div class="welcome" id="welcomeMsg">Bienvenue, utilisateur !</div>
+
+    <button class="btn-income" id="btnAddIncome">Ajouter une rentrée d'argent</button>
+    <button class="btn-expense" id="btnAddExpense">Ajouter une sortie d'argent</button>
+    <button class="btn-balance" id="btnShowBalance">Voir le solde actuel</button>
+    <button class="btn-history" id="btnShowHistory">Voir l'historique</button>
+    <button class="btn-logout" id="btnLogout">Se déconnecter</button>
+
+    <div class="balance" id="balanceDisplay" style="display:none;"></div>
+    <div id="historyDisplay" style="display:none;"></div>
+  </div>
+
+  <!-- Modal pour ajouter entrée/sortie -->
+  <div class="modal-bg" id="modalBg">
+    <div class="modal">
+      <span class="close-btn" id="modalClose">&times;</span>
+      <h3 id="modalTitle">Ajouter une transaction</h3>
+      <form id="transactionForm">
+        <label for="type">Type</label>
+        <select id="type" name="type" required>
+          <option value="income">Rentrée d'argent</option>
+          <option value="expense">Sortie d'argent</option>
+        </select>
+
+        <label for="amount">Montant (en CFA)</label>
+        <input type="number" id="amount" name="amount" min="1" required placeholder="Ex: 5000" />
+
+        <label for="description">Description</label>
+        <input type="text" id="description" name="description" placeholder="Ex: Salaire, Courses..." required />
+
+        <label for="date">Date</label>
+        <input type="date" id="date" name="date" required />
+
+        <button type="submit">Ajouter</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Récupérer l'utilisateur connecté depuis sessionStorage (stockage temporaire)
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+    const welcomeMsg = document.getElementById('welcomeMsg');
+    const balanceDisplay = document.getElementById('balanceDisplay');
+    const historyDisplay = document.getElementById('historyDisplay');
+
+    if (!currentUser) {
+      // Pas d'utilisateur connecté, rediriger vers connexion
+      alert('Veuillez vous connecter d\'abord.');
+      window.location.href = 'connexion.html'; // adapte selon ton fichier
+    } else {
+      welcomeMsg.textContent = `Bienvenue, ${currentUser.fullname} !`;
+    }
+
+    // Récupérer ou initialiser les transactions de l'utilisateur
+    function getTransactions() {
+      const tx = JSON.parse(localStorage.getItem('transactions_' + currentUser.email)) || [];
+      return tx;
+    }
+    function saveTransactions(transactions) {
+      localStorage.setItem('transactions_' + currentUser.email, JSON.stringify(transactions));
+    }
+
+    // Calculer le solde
+    function calculateBalance() {
+      const transactions = getTransactions();
+      let balance = 0;
+      transactions.forEach(t => {
+        if (t.type === 'income') balance += t.amount;
+        else balance -= t.amount;
+      });
+      return balance;
+    }
+
+    // Afficher le solde
+    function showBalance() {
+      const balance = calculateBalance();
+      balanceDisplay.style.display = 'block';
+      historyDisplay.style.display = 'none';
+      balanceDisplay.textContent = `Votre solde actuel est de : ${balance.toLocaleString('fr-FR')} CFA`;
+    }
+
+    // Afficher l'historique
+    function showHistory() {
+      const transactions = getTransactions();
+      balanceDisplay.style.display = 'none';
+      historyDisplay.style.display = 'block';
+
+      if (transactions.length === 0) {
+        historyDisplay.innerHTML = '<p class="no-data">Aucune transaction enregistrée.</p>';
+        return;
+      }
+
+      let html = '<table><thead><tr><th>Date</th><th>Description</th><th>Type</th><th>Montant (CFA)</th></tr></thead><tbody>';
+      transactions
+        .sort((a,b) => new Date(b.date) - new Date(a.date))
+        .forEach(t => {
+          html += `<tr>
+            <td>${t.date}</td>
+            <td>${t.description}</td>
+            <td class="${t.type === 'income' ? 'income' : 'expense'}">${t.type === 'income' ? 'Rentrée' : 'Sortie'}</td>
+            <td>${t.amount.toLocaleString('fr-FR')}</td>
+          </tr>`;
+        });
+      html += '</tbody></table>';
+      historyDisplay.innerHTML = html;
+    }
+
+    // Gestion modal
+    const modalBg = document.getElementById('modalBg');
+    const modalTitle = document.getElementById('modalTitle');
+    const transactionForm = document.getElementById('transactionForm');
+    const typeSelect = document.getElementById('type');
+    const amountInput = document.getElementById('amount');
+    const descriptionInput = document.getElementById('description');
+    const dateInput = document.getElementById('date');
+    const modalClose = document.getElementById('modalClose');
+
+    // Ouvrir modal pour ajout rentrée
+    document.getElementById('btnAddIncome').addEventListener('click', () => {
+      openModal('income');
+    });
+    // Ouvrir modal pour ajout sortie
+    document.getElementById('btnAddExpense').addEventListener('click', () => {
+      openModal('expense');
+    });
+
+    function openModal(type) {
+      modalBg.style.display = 'flex';
+      modalTitle.textContent = type === 'income' ? "Ajouter une rentrée d'argent" : "Ajouter une sortie d'argent";
+      typeSelect.value = type;
+      amountInput.value = '';
+      descriptionInput.value = '';
+      dateInput.value = new Date().toISOString().substr(0,10);
+    }
+
+    modalClose.addEventListener('click', () => {
+      modalBg.style.display = 'none';
+    });
+
+    // Soumission formulaire transaction
+    transactionForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const type = typeSelect.value;
+      const amount = parseFloat(amountInput.value);
+      const description = descriptionInput.value.trim();
+      const date = dateInput.value;
+
+      if (!amount || amount <= 0) {
+        alert('Veuillez entrer un montant valide.');
+        return;
+      }
+      if (!description) {
+        alert('Veuillez entrer une description.');
+        return;
+      }
+      if (!date) {
+        alert('Veuillez choisir une date.');
+        return;
+      }
+
+      const transactions = getTransactions();
+      transactions.push({ type, amount, description, date });
+      saveTransactions(transactions);
+
+      modalBg.style.display = 'none';
+      alert('Transaction ajoutée avec succès !');
+
+      // Actualiser affichage si nécessaire
+      showBalance();
+      showHistory();
+    });
+
+    // Boutons affichage
+    document.getElementById('btnShowBalance').addEventListener('click', showBalance);
+    document.getElementById('btnShowHistory').addEventListener('click', showHistory);
+
+    // Déconnexion
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      sessionStorage.removeItem('currentUser');
+      alert('Vous êtes déconnecté.');
+      window.location.href = 'connexion.html'; // adapte selon ton fichier
+    });
+
+    // Afficher solde par défaut au chargement
+    showBalance();
+  </script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Connexion - Gestion Budgétaire</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #008000, #FFD700, #D00000);
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #333;
+    }
+    .container {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      width: 350px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #008000;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      font-size: 1em;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 25px;
+      border: none;
+      background-color: #008000;
+      color: white;
+      font-size: 1.1em;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #006400;
+    }
+    .error {
+      color: #D00000;
+      font-size: 0.9em;
+      margin-top: 5px;
+    }
+    .success {
+      color: green;
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    .welcome {
+      text-align: center;
+      font-size: 1.2em;
+      margin-top: 20px;
+      color: #008000;
+    }
+    a {
+      display: block;
+      text-align: center;
+      margin-top: 15px;
+      color: #008000;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="loginContainer">
+    <h2>Connexion</h2>
+    <form id="loginForm" novalidate>
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="exemple@mail.com" required />
+
+      <label for="password">Mot de passe</label>
+      <input type="password" id="password" name="password" required minlength="6" />
+
+      <button type="submit">Se connecter</button>
+      <div id="message"></div>
+    </form>
+    <a href="inscription.html">Pas encore de compte ? Inscrivez-vous</a>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const messageDiv = document.getElementById('message');
+    const loginContainer = document.getElementById('loginContainer');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      messageDiv.textContent = '';
+      messageDiv.className = '';
+
+      const email = form.email.value.trim().toLowerCase();
+      const password = form.password.value;
+
+      if (!validateEmail(email)) {
+        showError('Veuillez entrer un email valide.');
+        return;
+      }
+      if (password.length < 6) {
+        showError('Le mot de passe doit contenir au moins 6 caractères.');
+        return;
+      }
+
+      // Récupérer les utilisateurs enregistrés
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+
+      // Chercher l'utilisateur correspondant
+      const user = users.find(u => u.email === email && u.password === password);
+
+      if (!user) {
+        showError('Email ou mot de passe incorrect.');
+        return;
+      }
+
+      // Connexion réussie : afficher un message de bienvenue
+      loginContainer.innerHTML = `
+        <h2>Bienvenue, ${user.fullname} !</h2>
+        <p class="welcome">Vous êtes connecté avec succès.</p>
+      `;
+
+      // Ici tu peux rediriger vers une autre page ou charger l'app principale
+    });
+
+    function showError(msg) {
+      messageDiv.textContent = msg;
+      messageDiv.className = 'error';
+    }
+
+    function validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email.toLowerCase());
+    }
+  </script>
+</body>
+</html>
